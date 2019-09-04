@@ -8,6 +8,9 @@ import androidx.recyclerview.widget.SimpleItemAnimator
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.ViewHolder
 import kotlinx.android.synthetic.main.activity_main.*
+import java.net.DatagramPacket
+import java.net.InetAddress
+import java.net.MulticastSocket
 
 class MainActivity : AppCompatActivity() {
 
@@ -30,6 +33,17 @@ class MainActivity : AppCompatActivity() {
                 handler.postDelayed(this, 100)
             }
         })
+
+        // Multicast
+
+        val group = InetAddress.getByName("239.0.0.1")
+        val socket = MulticastSocket(8888)
+        socket.joinGroup(group)
+        val bytes = ByteArray(23)
+        val packet = DatagramPacket(bytes, bytes.size)
+        socket.receive(packet)
+
+        // Multicast
     }
 
     private fun testPopulateScoreboard() {
