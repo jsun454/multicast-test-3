@@ -2,6 +2,8 @@ package com.example.jeffrey.multicasttest3
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import androidx.recyclerview.widget.SimpleItemAnimator
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.ViewHolder
@@ -20,7 +22,14 @@ class MainActivity : AppCompatActivity() {
         animator.supportsChangeAnimations = false
 
         testPopulateScoreboard()
-        testUpdateScoreboard()
+
+        val handler = Handler(Looper.getMainLooper())
+        handler.post(object: Runnable {
+            override fun run() {
+                testUpdateScoreboard()
+                handler.postDelayed(this, 100)
+            }
+        })
     }
 
     private fun testPopulateScoreboard() {
@@ -34,6 +43,11 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun testUpdateScoreboard() {
-
+        for(i in 0 until adapter.itemCount) {
+            (adapter.getItem(i) as RacerItem).racer.apply {
+                --timeLeft
+            }
+            adapter.notifyItemChanged(i)
+        }
     }
 }
