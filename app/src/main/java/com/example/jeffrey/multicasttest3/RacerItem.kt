@@ -11,7 +11,6 @@ class RacerItem(val racer: Racer) : Item<ViewHolder>() {
 
     override fun bind(viewHolder: ViewHolder, position: Int) {
         viewHolder.itemView.apply {
-//            background.alpha = 0
             racer_row_txt_name.text = racer.name
             racer_row_txt_lap_time.text = racer.lapTime.toString()
             racer_row_txt_best_lap.text = racer.bestLap.toString()
@@ -20,5 +19,4 @@ class RacerItem(val racer: Racer) : Item<ViewHolder>() {
             racer_row_txt_status.text = racer.status
         }
     }
-
 }
