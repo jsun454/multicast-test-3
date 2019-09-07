@@ -1,9 +1,12 @@
 package com.example.jeffrey.multicasttest3
 
+import android.content.Context
+import android.net.wifi.WifiManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import androidx.recyclerview.widget.SimpleItemAnimator
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.ViewHolder
@@ -11,6 +14,7 @@ import kotlinx.android.synthetic.main.activity_main.*
 import java.net.DatagramPacket
 import java.net.InetAddress
 import java.net.MulticastSocket
+import java.net.SocketAddress
 
 class MainActivity : AppCompatActivity() {
 
@@ -34,16 +38,31 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
-        // Multicast
+        // Multicast start
+
+        val wm = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+        val mLock = wm.createMulticastLock("MulticastLock")
+        mLock.setReferenceCounted(true)
+        mLock.acquire()
+
+//        val group = InetAddress.getByName("224.0.0.251")
+//        val socket = MulticastSocket(5353)
 
         val group = InetAddress.getByName("239.0.0.1")
         val socket = MulticastSocket(8888)
-        socket.joinGroup(group)
+
+        socket.joinGroup(group) // works now
         val bytes = ByteArray(23)
         val packet = DatagramPacket(bytes, bytes.size)
-        socket.receive(packet)
 
-        // Multicast
+        socket.receive(packet) // TODO: fix -> this line causes a crash
+
+//        val str = String(packet.data)
+//        Log.d("Jeffrey", str)
+
+//        mLock?.release()
+
+        // Multicast end
     }
 
     private fun testPopulateScoreboard() {
