@@ -2,6 +2,7 @@ package com.example.jeffrey.multicasttest3
 
 import android.content.Context
 import android.net.wifi.WifiManager
+import android.os.AsyncTask
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
@@ -11,6 +12,7 @@ import androidx.recyclerview.widget.SimpleItemAnimator
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.ViewHolder
 import kotlinx.android.synthetic.main.activity_main.*
+import org.jetbrains.anko.doAsync
 import java.net.DatagramPacket
 import java.net.InetAddress
 import java.net.MulticastSocket
@@ -41,34 +43,20 @@ class MainActivity : AppCompatActivity() {
 
         val wm = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
         val mLock = wm.createMulticastLock("MulticastLock")
-        mLock.setReferenceCounted(true)
+        mLock.setReferenceCounted(true) // pretty sure this line isn't needed because the constructor sets it true by default
         mLock.acquire()
 
-//        val group = InetAddress.getByName("224.0.0.251")
-//        val socket = MulticastSocket(5353)
+        doAsync {
+            val group = InetAddress.getByName("239.0.0.1")
+            val socket = MulticastSocket(8888)
+            socket.joinGroup(group)
 
-        val group = InetAddress.getByName("239.0.0.1")
-        val socket = MulticastSocket(8888)
-        socket.joinGroup(group) // works now
-
-        /*******
-        val bytes = ByteArray(23)
-        val packet = DatagramPacket(bytes, bytes.size)
-
-        socket.receive(packet) // TODO: fix -> this line causes a crash
-        *******/
-
-
-        /******* TEST THIS INSTEAD *******/
-        Log.d("Jeffrey", "Before thread, outside")
-        Thread {
-            Log.d("Jeffrey", "Thread start")
             try {
                 while(true) {
-                    Log.d("Jeffrey", "In while loop")
                     val bytes = ByteArray(23)
                     val packet = DatagramPacket(bytes, bytes.size)
                     socket.receive(packet)
+
                     Log.d("Jeffrey", "Data: ${String(packet.data)}")
                 }
             } catch(e: Exception) {
@@ -78,16 +66,7 @@ class MainActivity : AppCompatActivity() {
                 socket.close()
                 mLock?.release()
             }
-            Log.d("Jeffrey", "Thread end")
-        }.start()
-        Log.d("Jeffrey", "After thread, outside")
-        /******* TEST THIS INSTEAD *******/
-
-
-//        val str = String(packet.data)
-//        Log.d("Jeffrey", str)
-
-//        mLock?.release()
+        }
 
         // Multicast end
     }
