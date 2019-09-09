@@ -14,7 +14,7 @@ class RacerItem(val racer: Racer) : Item<ViewHolder>() {
             racer_row_txt_name.text = racer.name
             racer_row_txt_lap_time.text = racer.lapTime.toString()
             racer_row_txt_best_lap.text = racer.bestLap.toString()
-            racer_row_txt_time_left.text = racer.timeLeft.toString()
+            racer_row_txt_time_or_distance_left.text = racer.timeOrDistanceLeft.toString()
             racer_row_txt_kart_number.text = racer.kartNO.toString()
             racer_row_txt_status.text = racer.status
         }

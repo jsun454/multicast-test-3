@@ -40,7 +40,7 @@
             android:layout_height="wrap_content"/>
 
         <TextView
-            android:id="@+id/racer_row_txt_time_left"
+            android:id="@+id/racer_row_txt_time_or_distance_left"
             android:layout_marginStart="8dp"
             android:layout_marginEnd="8dp"
             android:layout_weight="1"
