@@ -56,8 +56,8 @@ class MainActivity : AppCompatActivity() {
             val socket = MulticastSocket(8888)
             socket.joinGroup(group)
 
-            try {
-                while(true) {
+            while(true) {
+                try {
                     val bytes = ByteArray(24)
                     val packet = DatagramPacket(bytes, bytes.size)
                     socket.receive(packet)
@@ -112,7 +112,9 @@ class MainActivity : AppCompatActivity() {
                                 racer.timeOrDistanceLeft = totalNumLaps-lapNumber+1
                                 racer.status = status
                             }
-                            adapter.notifyItemChanged(i)
+                            uiThread {
+                                adapter.notifyItemChanged(i)
+                            }
                             foundExistingRacer = true
                             break
                         }
@@ -125,13 +127,14 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
                     /* DISPLAY DATA ON SCOREBOARD */
+                } catch(e: Exception) {
+                    Log.d("Jeffrey", e.message)
+                } finally {
+                    // move these elsewhere or delete
+//                    socket.leaveGroup(group)
+//                    socket.close()
+//                    mLock?.release()
                 }
-            } catch(e: Exception) {
-                Log.d("Jeffrey", e.message)
-            } finally {
-                socket.leaveGroup(group)
-                socket.close()
-                mLock?.release()
             }
         }
 
