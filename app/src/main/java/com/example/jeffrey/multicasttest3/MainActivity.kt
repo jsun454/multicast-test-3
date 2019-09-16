@@ -111,6 +111,9 @@ class MainActivity : AppCompatActivity() {
                         val racer = Racer(name, prevLapTime, bestLapTime, totalNumLaps-lapNumber+1, kartNumber, status)
                         val racerItem = RacerItem(racer)
                         uiThread {
+                            // not sure if checking right before adding prevents duplicates
+                            // I may need to just remove duplicates after the fact
+                            if(karts[kartNumber] != 0) return@uiThread
                             adapter.add(racerItem)
                             // pos is 1 more than the actual position to avoid storing value=0 in the SparseIntArray
                             // (because value=0 if no key-value pair is stored for a given key (kart number))
@@ -120,7 +123,7 @@ class MainActivity : AppCompatActivity() {
                                 // not sure if this check is necessary
                                 // if this ever happens then add code to loop through adapter items to find the position
                                 //  of the kart and save it in the SparseIntArray (karts)
-                                Log.d("Jeffrey", "Wrong kart number at adapter position $pos")
+                                Log.e("Jeffrey", "Wrong kart number at adapter position $pos")
                             }
                         }
                     } else {
@@ -142,7 +145,7 @@ class MainActivity : AppCompatActivity() {
                     }
                     /* DISPLAY DATA ON SCOREBOARD */
                 } catch(e: Exception) {
-                    Log.d("Jeffrey", e.message)
+                    Log.e("Jeffrey", e.message)
                 } finally {
                     // move these elsewhere or delete
 //                    socket.leaveGroup(group)
