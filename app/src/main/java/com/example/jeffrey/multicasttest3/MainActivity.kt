@@ -9,6 +9,7 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.util.SparseArray
+import android.util.SparseIntArray
 import androidx.recyclerview.widget.SimpleItemAnimator
 import com.xwray.groupie.GroupAdapter
 import com.xwray.groupie.ViewHolder
@@ -22,6 +23,7 @@ import java.net.MulticastSocket
 class MainActivity : AppCompatActivity() {
 
     private val adapter = GroupAdapter<ViewHolder>()
+    private val karts = SparseIntArray() // stores (kart #, adapter pos + 1)
 
     @ExperimentalUnsignedTypes
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -62,7 +64,7 @@ class MainActivity : AppCompatActivity() {
                     val packet = DatagramPacket(bytes, bytes.size)
                     socket.receive(packet)
 
-                    Log.d("Jeffrey", "Data: ${String(packet.data)}")
+//                    Log.d("Jeffrey", "Data: ${String(packet.data)}")
 
                     /* DISPLAY DATA ON SCOREBOARD */
                     // 1 byte kart #
@@ -98,14 +100,33 @@ class MainActivity : AppCompatActivity() {
                     val checkSum = bytes[22]
                     val isTimeMode = (bytes[23].toInt() == 1) // assume false for now
 
-                    if(bestLapTime > prevLapTime) {
+                    if(bestLapTime > prevLapTime || bestLapTime == 0) {
                         bestLapTime = prevLapTime // update best lap
                     }
 
-                    var foundExistingRacer = false
-                    for(i in 0 until adapter.itemCount) {
-                        if((adapter.getItem(i) as RacerItem).racer.kartNO == kartNumber) {
-                            (adapter.getItem(i) as RacerItem).apply {
+                    Log.d("Jeffrey", "Kart: ${kartNumber%10}   Lap Time: $prevLapTime   Best Lap: $bestLapTime")
+
+                    if(karts[kartNumber] == 0) {
+                        Log.d("Jeffrey", "Not found ${kartNumber%10}")
+                        val racer = Racer(name, prevLapTime, bestLapTime, totalNumLaps-lapNumber+1, kartNumber, status)
+                        val racerItem = RacerItem(racer)
+                        uiThread {
+                            adapter.add(racerItem)
+                            // pos is 1 more than the actual position to avoid storing value=0 in the SparseIntArray
+                            // (because value=0 if no key-value pair is stored for a given key (kart number))
+                            val pos = adapter.itemCount
+                            karts.put(kartNumber, pos)
+                            if((adapter.getItem(pos-1) as RacerItem).racer.kartNO != kartNumber) {
+                                // not sure if this check is necessary
+                                // if this ever happens then add code to loop through adapter items to find the position
+                                //  of the kart and save it in the SparseIntArray (karts)
+                                Log.d("Jeffrey", "Wrong kart number at adapter position $pos")
+                            }
+                        }
+                    } else {
+                        val racerItem = adapter.getItem(karts[kartNumber]-1) as RacerItem
+                        if(racerItem.racer.kartNO == kartNumber) {
+                            racerItem.apply {
                                 racer.name = name
                                 racer.lapTime = prevLapTime
                                 racer.bestLap = bestLapTime
@@ -113,17 +134,10 @@ class MainActivity : AppCompatActivity() {
                                 racer.status = status
                             }
                             uiThread {
-                                adapter.notifyItemChanged(i)
+                                Log.d("Jeffrey", "Update: ${kartNumber%10}   Lap Time: ${racerItem.racer.lapTime}   " +
+                                        "Best Lap: ${racerItem.racer.bestLap}")
+                                adapter.notifyItemChanged(karts[kartNumber]-1)
                             }
-                            foundExistingRacer = true
-                            break
-                        }
-                    }
-                    if(!foundExistingRacer) {
-                        val racer = Racer(name, prevLapTime, bestLapTime, totalNumLaps-lapNumber+1, kartNumber, status)
-                        val racerItem = RacerItem(racer)
-                        uiThread {
-                            adapter.add(racerItem)
                         }
                     }
                     /* DISPLAY DATA ON SCOREBOARD */
